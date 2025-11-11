@@ -8,20 +8,27 @@ import sys
 os.environ['DATABASE_URL'] = 'postgresql://cafeteria_user:485b030a39acd60d5d65@geekhaven-brew_1_cafeteria-db:5432/cafeteria'
 
 try:
-    from database import SessionLocal, init_db
+    from database import SessionLocal, init_db, Base, engine
     from sqlalchemy import text
     
     print("🚀 Iniciando população simples do banco...")
     
-    # Inicializa banco
-    init_db()
+    # Inicializa banco e CRIA TODAS AS TABELAS
+    print("📋 Criando tabelas...")
+    Base.metadata.create_all(bind=engine)
+    
     db = SessionLocal()
     
-    # Limpar dados existentes
+    # Limpar dados existentes (se existirem)
     print("🗑️ Limpando dados existentes...")
-    db.execute(text("DELETE FROM users"))
-    db.execute(text("DELETE FROM products"))
-    db.commit()
+    try:
+        db.execute(text("DELETE FROM users"))
+        db.execute(text("DELETE FROM products"))
+        db.commit()
+        print("✅ Dados antigos removidos")
+    except:
+        print("ℹ️ Tabelas estavam vazias")
+        db.rollback()
     
     # Inserir admin diretamente via SQL (sem hash complexo)
     print("👤 Criando usuário admin...")
