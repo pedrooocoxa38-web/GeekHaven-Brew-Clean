@@ -8,47 +8,71 @@ import sys
 os.environ['DATABASE_URL'] = 'postgresql://cafeteria_user:485b030a39acd60d5d65@geekhaven-brew_1_cafeteria-db:5432/cafeteria'
 
 try:
-    from database import SessionLocal, init_db, Base, engine
+    from database import SessionLocal, Base, engine
+    from models import User, Product, UserRole
     from sqlalchemy import text
     
     print("🚀 Iniciando população simples do banco...")
     
-    # Inicializa banco e CRIA TODAS AS TABELAS
+    # FORÇA criação de todas as tabelas
     print("📋 Criando tabelas...")
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.drop_all(bind=engine)  # Remove todas primeiro
+    Base.metadata.create_all(bind=engine)  # Cria todas novamente
+    print("✅ Tabelas criadas!")
     
     db = SessionLocal()
     
-    # Limpar dados existentes (se existirem)
-    print("🗑️ Limpando dados existentes...")
-    try:
-        db.execute(text("DELETE FROM users"))
-        db.execute(text("DELETE FROM products"))
-        db.commit()
-        print("✅ Dados antigos removidos")
-    except:
-        print("ℹ️ Tabelas estavam vazias")
-        db.rollback()
-    
-    # Inserir admin diretamente via SQL (sem hash complexo)
+    # Criar usuário admin usando modelo ORM
     print("👤 Criando usuário admin...")
-    db.execute(text("""
-        INSERT INTO users (name, email, password, role) 
-        VALUES ('Admin', 'admin@geekhaven.com', 'admin123', 'admin')
-    """))
+    admin = User(
+        name="Admin",
+        email="admin@geekhaven.com",
+        password="admin123",  # Senha simples sem hash por enquanto
+        role=UserRole.ADMIN
+    )
+    db.add(admin)
     
-    # Inserir produtos básicos
+    # Criar produtos usando modelo ORM
     print("📦 Criando produtos...")
-    products_sql = """
-        INSERT INTO products (name, description, price, image, category, stock) VALUES 
-        ('Cappuccino Especial', 'Café premium com leite', 12.90, 'https://picsum.photos/400/300', 'Bebidas', 50),
-        ('Brownie Gamer', 'Brownie de chocolate', 15.00, 'https://picsum.photos/400/301', 'Doces', 25),
-        ('Energy Drink', 'Bebida energética', 8.50, 'https://picsum.photos/400/302', 'Bebidas', 30),
-        ('Pizza Personal', 'Pizza individual', 28.90, 'https://picsum.photos/400/303', 'Comidas', 20)
-    """
-    db.execute(text(products_sql))
+    products = [
+        Product(
+            name="Cappuccino Especial",
+            description="Café premium com leite vaporizado",
+            price=12.90,
+            image="https://picsum.photos/400/300",
+            category="Bebidas",
+            stock=50
+        ),
+        Product(
+            name="Brownie Gamer",
+            description="Brownie artesanal com chocolate",
+            price=15.00,
+            image="https://picsum.photos/400/301",
+            category="Doces",
+            stock=25
+        ),
+        Product(
+            name="Energy Drink Mix",
+            description="Bebida energética importada",
+            price=8.50,
+            image="https://picsum.photos/400/302",
+            category="Bebidas",
+            stock=30
+        ),
+        Product(
+            name="Pizza Personal",
+            description="Pizza individual margherita",
+            price=28.90,
+            image="https://picsum.photos/400/303",
+            category="Comidas",
+            stock=20
+        )
+    ]
     
-    # Confirmar mudanças
+    for product in products:
+        db.add(product)
+    
+    # Salvar tudo
     db.commit()
     
     print("✅ População concluída com sucesso!")
