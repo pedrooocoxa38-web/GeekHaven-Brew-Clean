@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teste de Conexão API - GeekHaven Brew</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #1a1a1a; 
+            color: #fff; 
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #333; 
+            border-radius: 8px; 
+        }
+        .test-result { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background: #1a472a; color: #4ade80; }
+        .error { background: #7f1d1d; color: #ef4444; }
+        .info { background: #1e293b; color: #0ea5e9; }
+        button { 
+            background: #3b82f6; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { background: #2563eb; }
+        pre { background: #262626; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste de Conexão API - GeekHaven Brew</h1>
+    <p>Este teste verifica se a API do backend está funcionando corretamente.</p>
+
+    <div class="test-section">
+        <h2>🔗 Configuração de URLs</h2>
+        <div id="url-config"></div>
+        <button onclick="testUrls()">Testar URLs</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🏥 Health Check</h2>
+        <div id="health-results"></div>
+        <button onclick="testHealth()">Testar Health</button>
+    </div>
+
+    <div class="test-section">
+        <h2>📦 Teste de Produtos</h2>
+        <div id="products-results"></div>
+        <button onclick="testProducts()">Testar Produtos</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🔐 Teste de Auth</h2>
+        <div id="auth-results"></div>
+        <button onclick="testAuth()">Testar Auth</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 Teste Completo</h2>
+        <div id="full-test-results"></div>
+        <button onclick="runFullTest()">Executar Teste Completo</button>
+    </div>
+
+    <script>
+        // Configuração das URLs
+        const BACKEND_URLS = [
+            'https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host',
+            'http://localhost:8000'
+        ];
+
+        function addResult(containerId, message, type = 'info') {
+            const container = document.getElementById(containerId);
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+            console.log(`[${type.toUpperCase()}]`, message);
+        }
+
+        function clearResults(containerId) {
+            document.getElementById(containerId).innerHTML = '';
+        }
+
+        async function testUrl(url, endpoint = '') {
+            try {
+                const response = await fetch(url + endpoint);
+                const data = await response.json();
+                return { success: true, status: response.status, data };
+            } catch (error) {
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testUrls() {
+            clearResults('url-config');
+            
+            addResult('url-config', '🔍 Testando conectividade das URLs...', 'info');
+            
+            for (const url of BACKEND_URLS) {
+                addResult('url-config', `📡 Testando: ${url}`, 'info');
+                
+                const result = await testUrl(url);
+                
+                if (result.success) {
+                    addResult('url-config', `✅ ${url} - Status: ${result.status}`, 'success');
+                    addResult('url-config', `<pre>${JSON.stringify(result.data, null, 2)}</pre>`, 'success');
+                } else {
+                    addResult('url-config', `❌ ${url} - Erro: ${result.error}`, 'error');
+                }
+            }
+        }
+
+        async function testHealth() {
+            clearResults('health-results');
+            
+            addResult('health-results', '🏥 Testando health check...', 'info');
+            
+            for (const url of BACKEND_URLS) {
+                const result = await testUrl(url, '/health');
+                
+                if (result.success) {
+                    addResult('health-results', `✅ Health Check OK: ${url}`, 'success');
+                } else {
+                    addResult('health-results', `❌ Health Check falhou: ${url} - ${result.error}`, 'error');
+                }
+            }
+        }
+
+        async function testProducts() {
+            clearResults('products-results');
+            
+            addResult('products-results', '📦 Testando endpoint de produtos...', 'info');
+            
+            for (const url of BACKEND_URLS) {
+                const result = await testUrl(url, '/api/products');
+                
+                if (result.success) {
+                    addResult('products-results', `✅ Produtos OK: ${url}`, 'success');
+                    addResult('products-results', `📊 Quantidade de produtos: ${result.data?.length || 'N/A'}`, 'info');
+                    if (result.data?.length > 0) {
+                        addResult('products-results', `<pre>${JSON.stringify(result.data[0], null, 2)}</pre>`, 'success');
+                    }
+                } else {
+                    addResult('products-results', `❌ Produtos falhou: ${url} - ${result.error}`, 'error');
+                }
+            }
+        }
+
+        async function testAuth() {
+            clearResults('auth-results');
+            
+            addResult('auth-results', '🔐 Testando endpoint de auth...', 'info');
+            
+            for (const url of BACKEND_URLS) {
+                // Teste de login com credenciais inválidas (deve retornar erro 401)
+                try {
+                    const response = await fetch(url + '/api/auth/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email: 'test@test.com', password: 'wrongpassword' })
+                    });
+                    
+                    if (response.status === 401) {
+                        addResult('auth-results', `✅ Auth endpoint respondendo: ${url}`, 'success');
+                    } else {
+                        const data = await response.json();
+                        addResult('auth-results', `⚠️ Auth retornou status inesperado ${response.status}: ${url}`, 'info');
+                    }
+                } catch (error) {
+                    addResult('auth-results', `❌ Auth falhou: ${url} - ${error.message}`, 'error');
+                }
+            }
+        }
+
+        async function runFullTest() {
+            clearResults('full-test-results');
+            
+            addResult('full-test-results', '🎯 Iniciando teste completo...', 'info');
+            
+            // Teste de conectividade básica
+            await testUrls();
+            
+            // Aguardar um pouco entre os testes
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testHealth();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testProducts();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            
+            await testAuth();
+            
+            addResult('full-test-results', '✅ Teste completo finalizado!', 'success');
+        }
+
+        // Executar teste inicial ao carregar a página
+        window.onload = function() {
+            testUrls();
+        };
+    </script>
+</body>
+</html>

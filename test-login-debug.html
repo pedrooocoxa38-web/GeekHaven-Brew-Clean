@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login GeekHaven</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            background: #f5f5f5;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .error {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .info {
+            color: #17a2b8;
+        }
+        pre {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+            border: 1px solid #e9ecef;
+        }
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 5px;
+            min-height: 50px;
+        }
+        input {
+            width: 300px;
+            padding: 10px;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-form {
+            background: #e8f4fd;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 GeekHaven Brew - Debug de Login</h1>
+        
+        <div class="login-form">
+            <h3>🔐 Teste de Login</h3>
+            <div>
+                <input type="email" id="email" placeholder="Email" value="admin@geekhaven.com">
+                <input type="password" id="password" placeholder="Senha" value="admin123">
+                <button onclick="testLogin()">Fazer Login</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Testes da API</h3>
+            <button onclick="testBackendStatus()">1. Status do Backend</button>
+            <button onclick="testProductsAPI()">2. Listar Produtos</button>
+            <button onclick="testLoginEndpoint()">3. Endpoint Login</button>
+            <button onclick="testCreateUser()">4. Criar Usuário Teste</button>
+            <button onclick="clearResults()">🧹 Limpar</button>
+            
+            <div id="results" class="result"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host';
+        
+        function addResult(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString('pt-BR');
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : 'info';
+            resultsDiv.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(url, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                const text = await response.text();
+                let data;
+                try {
+                    data = JSON.parse(text);
+                } catch {
+                    data = text;
+                }
+                
+                return {
+                    success: response.ok,
+                    status: response.status,
+                    data: data,
+                    headers: Object.fromEntries(response.headers.entries())
+                };
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    data: null
+                };
+            }
+        }
+
+        async function testBackendStatus() {
+            addResult('🔍 Testando conexão com o backend...', 'info');
+            
+            const result = await makeRequest(`${API_BASE}/`);
+            
+            if (result.success) {
+                addResult('✅ Backend está online!', 'success');
+                addResult(`📊 Resposta: ${JSON.stringify(result.data, null, 2)}`, 'info');
+            } else {
+                addResult(`❌ Backend fora do ar: ${result.error}`, 'error');
+            }
+        }
+
+        async function testProductsAPI() {
+            addResult('📦 Testando API de produtos...', 'info');
+            
+            const result = await makeRequest(`${API_BASE}/api/products`);
+            
+            if (result.success) {
+                addResult('✅ API de produtos funcionando!', 'success');
+                addResult(`📊 ${result.data.length} produtos encontrados`, 'info');
+                addResult(`🔍 Categorias encontradas: ${[...new Set(result.data.map(p => p.category))].join(', ')}`, 'info');
+            } else {
+                addResult(`❌ Erro na API de produtos: ${result.error}`, 'error');
+            }
+        }
+
+        async function testLoginEndpoint() {
+            addResult('🔐 Testando endpoint de login...', 'info');
+            
+            const result = await makeRequest(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    email: 'admin@geekhaven.com',
+                    password: 'admin123'
+                })
+            });
+            
+            if (result.success) {
+                addResult('✅ Login endpoint funcionando!', 'success');
+                addResult(`🎫 Token recebido: ${result.data.access_token ? 'SIM' : 'NÃO'}`, 'info');
+            } else {
+                addResult(`❌ Erro no login: Status ${result.status}`, 'error');
+                addResult(`📄 Resposta: ${JSON.stringify(result.data, null, 2)}`, 'error');
+            }
+        }
+
+        async function testCreateUser() {
+            addResult('👤 Testando criação de usuário...', 'info');
+            
+            const result = await makeRequest(`${API_BASE}/api/auth/register`, {
+                method: 'POST',
+                body: JSON.stringify({
+                    name: 'Teste User',
+                    email: `teste${Date.now()}@test.com`,
+                    password: '123456'
+                })
+            });
+            
+            if (result.success) {
+                addResult('✅ Usuário criado com sucesso!', 'success');
+                addResult(`👤 Usuário: ${JSON.stringify(result.data, null, 2)}`, 'info');
+            } else {
+                addResult(`❌ Erro ao criar usuário: Status ${result.status}`, 'error');
+                addResult(`📄 Resposta: ${JSON.stringify(result.data, null, 2)}`, 'error');
+            }
+        }
+
+        async function testLogin() {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            
+            addResult(`🔑 Tentando login com: ${email}`, 'info');
+            
+            // 1. Fazer login
+            const loginResult = await makeRequest(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                body: JSON.stringify({ email, password })
+            });
+            
+            if (loginResult.success) {
+                addResult('✅ Login realizado com sucesso!', 'success');
+                const token = loginResult.data.access_token;
+                
+                // 2. Testar perfil
+                const profileResult = await makeRequest(`${API_BASE}/api/auth/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (profileResult.success) {
+                    addResult('✅ Perfil carregado com sucesso!', 'success');
+                    addResult(`👤 Dados do usuário: ${JSON.stringify(profileResult.data, null, 2)}`, 'info');
+                    addResult(`🔑 É admin? ${profileResult.data.role === 'admin' ? 'SIM' : 'NÃO'}`, 'info');
+                } else {
+                    addResult(`❌ Erro ao carregar perfil: ${profileResult.error}`, 'error');
+                }
+                
+            } else {
+                addResult(`❌ Erro no login: Status ${loginResult.status}`, 'error');
+                if (loginResult.data) {
+                    addResult(`📄 Detalhes: ${JSON.stringify(loginResult.data, null, 2)}`, 'error');
+                }
+            }
+        }
+
+        // Auto-executar teste de status quando carrega a página
+        window.onload = () => {
+            setTimeout(() => {
+                testBackendStatus();
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
