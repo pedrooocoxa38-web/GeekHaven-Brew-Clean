@@ -30,16 +30,15 @@ const Products = () => {
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const allCategories: Category[] = [
-    { name: "Cafés Especiais", displayName: "Cafés Especiais", icon: <Coffee className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-amber-900" },
+    { name: "Cafés e Bebidas", displayName: "Cafés e Bebidas", icon: <Coffee className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-amber-900" },
     { name: "Pizzas", displayName: "Pizzas", icon: <Beef className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-red-950" },
-    { name: "Sucos", displayName: "Sucos", icon: <Droplets className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-emerald-950" },
-    { name: "Hamburgueres", displayName: "Hambúrgueres", icon: <Beef className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-orange-950" },
+    { name: "Hambúrgueres", displayName: "Hambúrgueres", icon: <Beef className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-orange-950" },
     { name: "Sobremesas", displayName: "Sobremesas", icon: <IceCream className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-pink-950" },
-    { name: "Snacks", displayName: "Snacks", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-yellow-950" },
+    { name: "Sucos e Poções", displayName: "Sucos e Poções", icon: <Droplets className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-emerald-950" },
+    { name: "Snacks e Aperitivos", displayName: "Snacks e Aperitivos", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-yellow-950" },
     { name: "Saladas", displayName: "Saladas", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-green-950" },
-    { name: "Bebidas", displayName: "Bebidas", icon: <Droplets className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-blue-950" },
-    { name: "Bonecos e Colecionaveis", displayName: "Colecionáveis", icon: <Gamepad2 className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-purple-950" },
-    { name: "Jogos de Tabuleiro e Cartas", displayName: "Jogos", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-indigo-950" },
+    { name: "Colecionáveis e Action Figures", displayName: "Colecionáveis", icon: <Gamepad2 className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-purple-950" },
+    { name: "Jogos de Tabuleiro e Cartas", displayName: "Jogos de Tabuleiro", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-indigo-950" },
   ];
 
   useEffect(() => {
