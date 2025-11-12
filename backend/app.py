@@ -25,10 +25,16 @@ app = FastAPI(
 # Configuração de CORS para permitir requisições do frontend React
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permite QUALQUER origem (para debug)
+    allow_origins=[
+        "http://localhost:5173",  # Dev local
+        "http://localhost:3000",  # Produção local
+        "https://geekhaven-brew-1-cafeteria-front.a9negi.easypanel.host",  # EasyPanel frontend
+        "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000"
+    ],
     allow_credentials=True,
-    allow_methods=["*"],  # Permite todos os métodos (GET, POST, PUT, DELETE, etc.)
-    allow_headers=["*"],  # Permite todos os headers
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["*"],
 )
 
 
@@ -55,6 +61,7 @@ def root():
         "version": "1.0.0",
         "status": "online",
         "docs": "/docs",
+        "interactive_docs": "https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host/docs",
         "endpoints": {
             "auth": "/api/auth",
             "products": "/api/products",
@@ -62,6 +69,16 @@ def root():
             "reservations": "/api/reservations",
             "orders": "/api/orders"
         }
+    }
+
+@app.get("/health")
+def health_check():
+    """
+    Health check endpoint
+    """
+    return {
+        "status": "healthy",
+        "message": "API está funcionando normalmente"
     }
 
 

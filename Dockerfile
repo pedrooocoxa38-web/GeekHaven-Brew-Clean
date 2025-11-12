@@ -13,6 +13,10 @@ RUN npm ci
 # Copia código da aplicação
 COPY . .
 
+# Define variáveis de ambiente para produção
+ENV NODE_ENV=production
+ENV VITE_API_URL=https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host/api
+
 # Build da aplicação
 RUN npm run build
 

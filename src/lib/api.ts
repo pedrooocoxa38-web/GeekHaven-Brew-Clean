@@ -4,10 +4,36 @@
  */
 
 // Configuração da URL da API - produção vs desenvolvimento
-const API_URL = import.meta.env.VITE_API_URL || 
-  (import.meta.env.PROD 
-    ? 'https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host' 
-    : 'http://localhost:8000') + '/api';
+const getApiUrl = () => {
+  // Primeira prioridade: variável de ambiente VITE_API_URL
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL;
+  }
+  
+  // Segunda prioridade: detectar ambiente automaticamente
+  const isDev = import.meta.env.DEV;
+  const isProd = import.meta.env.PROD;
+  
+  if (isDev) {
+    return 'http://localhost:8000/api';
+  }
+  
+  if (isProd) {
+    // URL de produção do EasyPanel
+    return 'https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host/api';
+  }
+  
+  // Fallback
+  return 'http://localhost:8000/api';
+};
+
+const API_URL = getApiUrl();
+
+// Debug log para verificar a URL que está sendo usada
+console.log('🔗 API URL configurada:', API_URL);
+console.log('🔧 Ambiente:', import.meta.env.MODE);
+console.log('🚀 Produção:', import.meta.env.PROD);
+console.log('🛠️ Desenvolvimento:', import.meta.env.DEV);
 
 // Types
 export interface User {
@@ -96,6 +122,7 @@ const apiRequest = async <T>(
   const url = `${API_URL}${endpoint}`;
   
   console.log('🚀 Fazendo requisição para:', url);
+  console.log('🔧 Opções:', options);
   
   const config: RequestInit = {
     headers: getAuthHeaders(),
@@ -104,14 +131,24 @@ const apiRequest = async <T>(
 
   try {
     const response = await fetch(url, config);
-    console.log('📡 Resposta recebida:', response.status, response.statusText);
+    console.log('📡 Resposta recebida:', {
+      status: response.status,
+      statusText: response.statusText,
+      headers: Object.fromEntries(response.headers.entries()),
+      url: response.url
+    });
     
     if (!response.ok) {
       const errorData = await response.json().catch(() => null);
-      console.error('❌ Erro na API:', response.status, errorData);
+      console.error('❌ Erro na API:', {
+        status: response.status,
+        statusText: response.statusText,
+        errorData,
+        url
+      });
       throw new APIError(
         response.status, 
-        errorData?.detail || `HTTP ${response.status}: ${response.statusText}`
+        errorData?.detail || errorData?.message || `HTTP ${response.status}: ${response.statusText}`
       );
     }
 
@@ -120,15 +157,27 @@ const apiRequest = async <T>(
       return {} as T;
     }
 
-    return await response.json();
+    const data = await response.json();
+    console.log('✅ Dados recebidos:', data);
+    return data;
   } catch (error) {
     if (error instanceof APIError) {
       throw error;
     }
     
     // Network or other errors
-    console.error('API Request failed:', error);
-    throw new APIError(0, 'Erro de conexão. Verifique se o backend está rodando.');
+    console.error('🔥 Falha na requisição da API:', {
+      error,
+      url,
+      message: error instanceof Error ? error.message : 'Erro desconhecido'
+    });
+    
+    // Mais informações sobre o tipo de erro
+    if (error instanceof TypeError && error.message.includes('fetch')) {
+      throw new APIError(0, `Erro de conectividade. Verifique se o backend está rodando em: ${API_URL.replace('/api', '')}`);
+    }
+    
+    throw new APIError(0, 'Erro de conexão. Verifique sua internet e tente novamente.');
   }
 };
 
