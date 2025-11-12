@@ -29,7 +29,9 @@ const Products = () => {
   const carouselRef = useRef<HTMLDivElement>(null);
   const autoPlayIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
+  // Categorias antigas e novas - compatibilidade total
   const allCategories: Category[] = [
+    // Categorias NOVAS
     { name: "Cafés e Bebidas", displayName: "Cafés e Bebidas", icon: <Coffee className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-amber-900" },
     { name: "Pizzas", displayName: "Pizzas", icon: <Beef className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-red-950" },
     { name: "Hambúrgueres", displayName: "Hambúrgueres", icon: <Beef className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-orange-950" },
@@ -39,6 +41,15 @@ const Products = () => {
     { name: "Saladas", displayName: "Saladas", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-green-950" },
     { name: "Colecionáveis e Action Figures", displayName: "Colecionáveis", icon: <Gamepad2 className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-purple-950" },
     { name: "Jogos de Tabuleiro e Cartas", displayName: "Jogos de Tabuleiro", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-indigo-950" },
+    
+    // Categorias ANTIGAS (compatibilidade)
+    { name: "Cafés Especiais", displayName: "Cafés Especiais", icon: <Coffee className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-amber-900" },
+    { name: "Bebidas Geladas", displayName: "Bebidas Geladas", icon: <Droplets className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-blue-950" },
+    { name: "Doces & Sobremesas", displayName: "Doces & Sobremesas", icon: <IceCream className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-pink-950" },
+    { name: "Salgados", displayName: "Salgados", icon: <Beef className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-orange-950" },
+    { name: "Merchandising", displayName: "Merchandising", icon: <Gamepad2 className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-purple-950" },
+    { name: "Bebidas Quentes", displayName: "Bebidas Quentes", icon: <Coffee className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-red-950" },
+    { name: "Combos", displayName: "Combos", icon: <Trophy className="h-6 w-6" />, color: "from-zinc-800 via-zinc-700 to-yellow-950" },
   ];
 
   useEffect(() => {
