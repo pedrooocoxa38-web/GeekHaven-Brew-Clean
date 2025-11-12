@@ -135,4 +135,6 @@ def seed_database():
 
 
 if __name__ == "__main__":
-    seed_database()
+    # Use the full product seed instead of simple one
+    from seed_food_drinks import seed_food_drinks
+    seed_food_drinks()

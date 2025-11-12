@@ -25,20 +25,7 @@ app = FastAPI(
 # Configuração de CORS para permitir requisições do frontend React
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # Vite dev server
-        "http://localhost:3000",  # React dev server alternativo
-        "http://localhost:8080",  # Vite dev server (porta atual)
-        "http://localhost:8081",  # Vite dev server alternativo
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:8080",
-        "http://127.0.0.1:8081",
-        "https://geekhaven-brew-1-cafeteria-front.a9negi.easypanel.host",  # Frontend produção
-        "https://geekhaven.seudominio.com",  # Frontend produção backup
-        "https://*.seudominio.com",  # Qualquer subdominio seu
-        "*"  # Permite qualquer origem (apenas para testes)
-    ],
+    allow_origins=["*"],  # Permite QUALQUER origem (para debug)
     allow_credentials=True,
     allow_methods=["*"],  # Permite todos os métodos (GET, POST, PUT, DELETE, etc.)
     allow_headers=["*"],  # Permite todos os headers
