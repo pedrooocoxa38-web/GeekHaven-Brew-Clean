@@ -9,4 +9,5 @@ COPY . .
 
 EXPOSE 80
 
-CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80"]
+# Comando com docs explícitos habilitados
+CMD ["uvicorn", "app:app", "--host", "0.0.0.0", "--port", "80", "--docs-url", "/docs", "--redoc-url", "/redoc"]

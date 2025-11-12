@@ -61,6 +61,7 @@ def root():
         "version": "1.0.0",
         "status": "online",
         "docs": "/docs",
+        "redoc": "/redoc",
         "interactive_docs": "https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host/docs",
         "endpoints": {
             "auth": "/api/auth",
@@ -71,6 +72,14 @@ def root():
         }
     }
 
+@app.get("/docs-redirect")
+def docs_redirect():
+    """
+    Redirect para documentação
+    """
+    from fastapi.responses import RedirectResponse
+    return RedirectResponse(url="/docs")
+
 @app.get("/health")
 def health_check():
     """
@@ -78,7 +87,38 @@ def health_check():
     """
     return {
         "status": "healthy",
-        "message": "API está funcionando normalmente"
+        "message": "API está funcionando normalmente",
+        "docs_available": True,
+        "docs_url": "/docs"
+    }
+
+
+@app.get("/debug")
+def debug_info():
+    """
+    Debug - informações sobre rotas e configuração
+    """
+    import sys
+    from fastapi.openapi.utils import get_openapi
+    
+    routes = []
+    for route in app.routes:
+        if hasattr(route, 'methods') and hasattr(route, 'path'):
+            routes.append({
+                "path": route.path,
+                "methods": list(route.methods),
+                "name": getattr(route, 'name', 'Unknown')
+            })
+    
+    return {
+        "fastapi_version": sys.modules.get('fastapi', {}).get('__version__', 'Unknown'),
+        "docs_url": app.docs_url,
+        "redoc_url": app.redoc_url,
+        "openapi_url": app.openapi_url,
+        "title": app.title,
+        "routes_count": len(routes),
+        "available_routes": routes[:10],  # Primeiras 10 rotas
+        "docs_should_be_at": "https://geekhaven-brew-1-cafeteria-back-1.a9negi.easypanel.host/docs"
     }
 
 
