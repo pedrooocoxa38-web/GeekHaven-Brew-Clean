@@ -138,17 +138,9 @@ def update_order_status(
         )
     
     print(f"[UPDATE ORDER STATUS] Status anterior: {order.status}")
-    # Converte o enum recebido (pydantic/schema) para o enum do modelo
-    try:
-        # tenta mapear pelo nome do membro (ex: READY -> ModelOrderStatus.READY)
-        new_status = ModelOrderStatus[status_data.status.name]
-    except Exception:
-        # fallback: usa o valor (string) diretamente
-        new_status = status_data.status.value if hasattr(status_data.status, 'value') else status_data.status
-
-    new_status_value = getattr(new_status, 'value', new_status)
-    print(f"[UPDATE ORDER STATUS] Novo status (modelo): {new_status} (value: {new_status_value})")
-    # Garantir que o que vai para o DB seja o label/valor (ex: 'delivered') e não o nome em MAIÚSCULAS
+    # Usa o valor do enum diretamente (agora em MAIÚSCULO para combinar com o banco)
+    new_status_value = status_data.status.value if hasattr(status_data.status, 'value') else status_data.status
+    print(f"[UPDATE ORDER STATUS] Novo status: {new_status_value}")
     order.status = new_status_value
     db.commit()
     db.refresh(order)

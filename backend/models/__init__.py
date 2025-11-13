@@ -16,11 +16,11 @@ class UserRole(str, enum.Enum):
 
 class OrderStatus(str, enum.Enum):
     """Status dos pedidos"""
-    PENDING = "pending"
-    PREPARING = "preparing"
-    READY = "ready"
-    DELIVERED = "delivered"
-    CANCELLED = "cancelled"
+    PENDING = "PENDING"
+    PREPARING = "PREPARING"
+    READY = "READY"
+    DELIVERED = "DELIVERED"
+    CANCELLED = "CANCELLED"
 
 
 class ReservationStatus(str, enum.Enum):

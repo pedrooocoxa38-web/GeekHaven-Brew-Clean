@@ -14,11 +14,11 @@ class UserRoleEnum(str, Enum):
 
 
 class OrderStatusEnum(str, Enum):
-    PENDING = "pending"
-    PREPARING = "preparing"
-    READY = "ready"
-    DELIVERED = "delivered"
-    CANCELLED = "cancelled"
+    PENDING = "PENDING"
+    PREPARING = "PREPARING"
+    READY = "READY"
+    DELIVERED = "DELIVERED"
+    CANCELLED = "CANCELLED"
 
 
 class ReservationStatusEnum(str, Enum):
