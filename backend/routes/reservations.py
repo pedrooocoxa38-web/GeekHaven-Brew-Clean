@@ -55,27 +55,44 @@ def create_reservation(
     """
     Cria uma nova reserva
     """
+    # DEBUG: Log dos dados recebidos
+    print(f"📝 Criando reserva para usuário: {current_user.email}")
+    print(f"   Dados recebidos: {reservation_data}")
+    print(f"   Date: {reservation_data.date}")
+    print(f"   Time: {reservation_data.time}")
+    print(f"   People count: {reservation_data.people_count}")
+    
     # Validação básica de data (formato YYYY-MM-DD)
     try:
         reservation_date = datetime.strptime(reservation_data.date, "%Y-%m-%d")
         if reservation_date.date() < datetime.now().date():
+            print(f"❌ Erro: Data no passado - {reservation_data.date}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Não é possível fazer reserva em data passada"
             )
-    except ValueError:
+    except ValueError as e:
+        print(f"❌ Erro ao parsear data: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Formato de data inválido. Use: YYYY-MM-DD"
         )
     
-    # Validação básica de horário (formato HH:MM)
+    # Validação básica de horário (formato HH:MM ou HH:MM - HH:MM)
     try:
-        datetime.strptime(reservation_data.time, "%H:%M")
-    except ValueError:
+        # Aceita tanto "14:00" quanto "14:00 - 16:00"
+        if " - " in reservation_data.time:
+            times = reservation_data.time.split(" - ")
+            datetime.strptime(times[0].strip(), "%H:%M")
+            datetime.strptime(times[1].strip(), "%H:%M")
+        else:
+            datetime.strptime(reservation_data.time, "%H:%M")
+        print(f"✅ Horário validado: {reservation_data.time}")
+    except ValueError as e:
+        print(f"❌ Erro ao parsear horário: {e}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Formato de horário inválido. Use: HH:MM"
+            detail="Formato de horário inválido. Use: HH:MM ou HH:MM - HH:MM"
         )
     
     # Verifica se já existe reserva no mesmo horário e data
@@ -86,12 +103,14 @@ def create_reservation(
     ).first()
     
     if existing_reservation:
+        print(f"❌ Conflito: Já existe reserva para {reservation_data.date} às {reservation_data.time}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Já existe uma reserva para este horário"
         )
     
     # Cria nova reserva
+    print(f"✅ Criando reserva no banco de dados...")
     new_reservation = Reservation(
         user_id=current_user.id,
         date=reservation_data.date,
@@ -104,6 +123,7 @@ def create_reservation(
     db.commit()
     db.refresh(new_reservation)
     
+    print(f"✅ Reserva criada com sucesso: ID {new_reservation.id}")
     return new_reservation
 
 
