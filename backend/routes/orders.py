@@ -146,8 +146,10 @@ def update_order_status(
         # fallback: usa o valor (string) diretamente
         new_status = status_data.status.value if hasattr(status_data.status, 'value') else status_data.status
 
-    print(f"[UPDATE ORDER STATUS] Novo status (modelo): {new_status} (value: {getattr(new_status, 'value', new_status)})")
-    order.status = new_status
+    new_status_value = getattr(new_status, 'value', new_status)
+    print(f"[UPDATE ORDER STATUS] Novo status (modelo): {new_status} (value: {new_status_value})")
+    # Garantir que o que vai para o DB seja o label/valor (ex: 'delivered') e não o nome em MAIÚSCULAS
+    order.status = new_status_value
     db.commit()
     db.refresh(order)
     print(f"[UPDATE ORDER STATUS] ✅ Status atualizado para: {order.status}")
