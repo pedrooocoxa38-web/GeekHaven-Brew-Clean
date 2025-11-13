@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from typing import Optional
 from jose import JWTError, jwt
 from passlib.context import CryptContext
+import hashlib
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
@@ -26,25 +27,26 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
 
 
-def _truncate_password(password: str) -> str:
-    """Trunca a senha para 72 bytes (limite do bcrypt)"""
-    # Converte para bytes, trunca e volta para string
-    password_bytes = password.encode('utf-8')
-    if len(password_bytes) > 72:
-        password_bytes = password_bytes[:72]
-    return password_bytes.decode('utf-8', errors='ignore')
+
+def _sha256_digest(password: str) -> str:
+    """Gera um hash SHA256 hexadecimal da senha (garante tamanho fixo para bcrypt)"""
+    return hashlib.sha256(password.encode('utf-8')).hexdigest()
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    """Verifica se a senha corresponde ao hash"""
-    truncated_password = _truncate_password(plain_password)
-    return pwd_context.verify(truncated_password, hashed_password)
+    """Verifica se a senha corresponde ao hash usando SHA256 + bcrypt"""
+    try:
+        password_digest = _sha256_digest(plain_password)
+        return pwd_context.verify(password_digest, hashed_password)
+    except Exception as e:
+        print(f"Erro ao verificar senha: {e}")
+        return False
 
 
 def get_password_hash(password: str) -> str:
-    """Cria hash da senha"""
-    truncated_password = _truncate_password(password)
-    return pwd_context.hash(truncated_password)
+    """Cria hash da senha usando SHA256 + bcrypt"""
+    password_digest = _sha256_digest(password)
+    return pwd_context.hash(password_digest)
 
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
