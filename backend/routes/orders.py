@@ -123,16 +123,23 @@ def update_order_status(
     """
     Atualiza status de um pedido (apenas admin)
     """
+    print(f"\n[UPDATE ORDER STATUS] Order ID: {order_id}")
+    print(f"[UPDATE ORDER STATUS] Status recebido: {status_data.status}")
+    print(f"[UPDATE ORDER STATUS] Tipo: {type(status_data.status)}")
+    
     order = db.query(Order).filter(Order.id == order_id).first()
     
     if not order:
+        print(f"[UPDATE ORDER STATUS] ❌ Pedido {order_id} não encontrado")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=f"Pedido com ID {order_id} não encontrado"
         )
     
+    print(f"[UPDATE ORDER STATUS] Status anterior: {order.status}")
     order.status = status_data.status
     db.commit()
     db.refresh(order)
+    print(f"[UPDATE ORDER STATUS] ✅ Status atualizado para: {order.status}")
     
     return order

@@ -15,8 +15,9 @@ class UserRoleEnum(str, Enum):
 
 class OrderStatusEnum(str, Enum):
     PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
+    PREPARING = "preparing"
+    READY = "ready"
+    DELIVERED = "delivered"
     CANCELLED = "cancelled"
 
 
