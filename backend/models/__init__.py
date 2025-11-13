@@ -17,8 +17,9 @@ class UserRole(str, enum.Enum):
 class OrderStatus(str, enum.Enum):
     """Status dos pedidos"""
     PENDING = "pending"
-    PROCESSING = "processing"
-    COMPLETED = "completed"
+    PREPARING = "preparing"
+    READY = "ready"
+    DELIVERED = "delivered"
     CANCELLED = "cancelled"
 
 
