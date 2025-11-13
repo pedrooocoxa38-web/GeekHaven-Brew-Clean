@@ -9,6 +9,7 @@ from database import get_db
 from models import Order, OrderItem, Product, User
 from schemas import OrderCreate, OrderResponse, OrderStatusUpdate, MessageResponse
 from utils.auth import get_current_user, get_current_admin_user
+from models import OrderStatus as ModelOrderStatus
 
 router = APIRouter(prefix="/api/orders", tags=["Pedidos"])
 
@@ -137,7 +138,16 @@ def update_order_status(
         )
     
     print(f"[UPDATE ORDER STATUS] Status anterior: {order.status}")
-    order.status = status_data.status
+    # Converte o enum recebido (pydantic/schema) para o enum do modelo
+    try:
+        # tenta mapear pelo nome do membro (ex: READY -> ModelOrderStatus.READY)
+        new_status = ModelOrderStatus[status_data.status.name]
+    except Exception:
+        # fallback: usa o valor (string) diretamente
+        new_status = status_data.status.value if hasattr(status_data.status, 'value') else status_data.status
+
+    print(f"[UPDATE ORDER STATUS] Novo status (modelo): {new_status} (value: {getattr(new_status, 'value', new_status)})")
+    order.status = new_status
     db.commit()
     db.refresh(order)
     print(f"[UPDATE ORDER STATUS] ✅ Status atualizado para: {order.status}")
