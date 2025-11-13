@@ -53,10 +53,29 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
     """
     Autentica usuário e retorna token JWT
     """
+    # DEBUG: Log da tentativa de login
+    print(f"🔐 Tentativa de login: {user_credentials.email}")
+    print(f"   Tamanho da senha recebida: {len(user_credentials.password)} caracteres")
+    
     # Busca usuário pelo email
     user = db.query(User).filter(User.email == user_credentials.email).first()
     
-    if not user or not verify_password(user_credentials.password, user.password):
+    if not user:
+        print(f"❌ Usuário não encontrado: {user_credentials.email}")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email ou senha incorretos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    print(f"✅ Usuário encontrado: {user.name} ({user.email})")
+    print(f"   Hash no banco: {user.password[:60]}...")
+    
+    # Verifica senha
+    password_valid = verify_password(user_credentials.password, user.password)
+    print(f"   Verificação de senha: {'✅ OK' if password_valid else '❌ FALHOU'}")
+    
+    if not password_valid:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email ou senha incorretos",
@@ -64,6 +83,7 @@ def login(user_credentials: UserLogin, db: Session = Depends(get_db)):
         )
     
     # Cria token JWT
+    print(f"✅ Login bem-sucedido para: {user.email}")
     access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     access_token = create_access_token(
         data={"sub": user.email}, expires_delta=access_token_expires
