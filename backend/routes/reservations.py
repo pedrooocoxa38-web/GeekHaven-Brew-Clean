@@ -137,16 +137,24 @@ def update_reservation(
     """
     Atualiza uma reserva existente
     """
+    # DEBUG: Log dos dados recebidos
+    print(f"✏️ Editando reserva ID {reservation_id} para usuário: {current_user.email}")
+    print(f"   Dados recebidos: {reservation_data}")
+    
     reservation = db.query(Reservation).filter(Reservation.id == reservation_id).first()
     
     if not reservation:
+        print(f"❌ Reserva {reservation_id} não encontrada")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Reserva não encontrada"
         )
     
+    print(f"✅ Reserva encontrada: {reservation.date} às {reservation.time}")
+    
     # Verifica permissão
     if reservation.user_id != current_user.id and current_user.role != "admin":
+        print(f"❌ Usuário {current_user.id} não tem permissão para editar reserva de usuário {reservation.user_id}")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Você não tem permissão para editar esta reserva"
@@ -154,17 +162,21 @@ def update_reservation(
     
     # Atualiza apenas os campos fornecidos
     update_data = reservation_data.model_dump(exclude_unset=True)
+    print(f"   Campos a atualizar: {update_data}")
     
     # Validações se data ou hora forem atualizadas
     if "date" in update_data:
         try:
             reservation_date = datetime.strptime(update_data["date"], "%Y-%m-%d")
             if reservation_date.date() < datetime.now().date():
+                print(f"❌ Erro: Data no passado - {update_data['date']}")
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Não é possível fazer reserva em data passada"
                 )
-        except ValueError:
+            print(f"✅ Data validada: {update_data['date']}")
+        except ValueError as e:
+            print(f"❌ Erro ao parsear data: {e}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="Formato de data inválido. Use: YYYY-MM-DD"
@@ -172,11 +184,19 @@ def update_reservation(
     
     if "time" in update_data:
         try:
-            datetime.strptime(update_data["time"], "%H:%M")
-        except ValueError:
+            # Aceita tanto "14:00" quanto "14:00 - 16:00"
+            if " - " in update_data["time"]:
+                times = update_data["time"].split(" - ")
+                datetime.strptime(times[0].strip(), "%H:%M")
+                datetime.strptime(times[1].strip(), "%H:%M")
+            else:
+                datetime.strptime(update_data["time"], "%H:%M")
+            print(f"✅ Horário validado: {update_data['time']}")
+        except ValueError as e:
+            print(f"❌ Erro ao parsear horário: {e}")
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Formato de horário inválido. Use: HH:MM"
+                detail="Formato de horário inválido. Use: HH:MM ou HH:MM - HH:MM"
             )
     
     for key, value in update_data.items():
@@ -185,6 +205,7 @@ def update_reservation(
     db.commit()
     db.refresh(reservation)
     
+    print(f"✅ Reserva {reservation_id} atualizada com sucesso")
     return reservation
 
 
